@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin</title>
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="navbar.css">
+
+    <script type="text/javascript" src="admin.js"></script>
+</head>
+
+<body>
+
+    <div>
+        <div class="navbar">
+            <a href="#" style="font-weight: bold;">HOME</a>
+        </div>
+        <h1>Account Database</h1>
+
+        <label for="userId">Enter User ID:</label>
+        <input type="text" id="userId" style="width: 20%;">
+        <button id="getButton" onclick="makeApiRequest()" style="margin-left: 10px;">Get Account Details</button>
+        <br>
+        <table id="accountTable">
+            <thead>
+                <tr>
+                    <th>Account No</th>
+                    <th>Name</th>
+                    <th>Credit Score</th>
+                    <th>Country</th>
+                    <th>Gender</th>
+                    <th>Age</th>
+                    <th>Tenure</th>
+                    <th>Balance</th>
+                    <th>Credit Card Holder</th>
+                    <th>Account Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="userIdDisplay"></td>
+                    <td id="userNameDisplay"></td>
+                    <td id="userCreditScoreDisplay"></td>
+                    <td id="userCountryDisplay"></td>
+                    <td id="userGenderDisplay"></td>
+                    <td id="userAgeDisplay"></td>
+                    <td id="userTenureDisplay"></td>
+                    <td id="userBalanceDisplay"></td>
+                    <td id="userHasCreditCardDisplay"></td>
+                    <td id="userAccountStatusDisplay"></td>
+                </tr>
+            </tbody>
+        </table>
+        <br>
+
+        <hr>
+
+        <div class="container">
+            <h2>Insert Account</h2>
+
+            <form id="insertAccountForm">
+                <!-- <input type="text" id="postuserId" name="postuserId" placeholder="Enter ID">
+                <input type="text" id="userName" name="userName" placeholder="Enter name">
+                <input type="text" id="creditScore" name="creditScore" placeholder="Enter credit score">
+                <input type="text" id="country" name="country" placeholder="Enter country">
+                <input type="text" id="gender" name="gender" placeholder="Enter gender">
+                <input type="text" id="age" name="age" placeholder="Enter age">
+                <input type="text" id="tenure" name="tenure" placeholder="Enter tenure">
+                <input type="text" id="balance" name="balance" placeholder="Enter balance">
+                <input type="text" id="hasCreditCard" name="hasCreditCard" placeholder="Enter hasCreditCard">
+                <input type="text" id="accountStatus" name="accountStatus" placeholder="Enter account status"> -->
+                <label for="postuserId">ID:</label>
+                <input type="text" id="postuserId" name="postuserId" placeholder="Enter ID" required>
+
+                <label for="userName">Name:</label>
+                <input type="text" id="userName" name="userName" placeholder="Enter name">
+
+                <label for="creditScore">Credit Score:</label>
+                <input type="text" id="creditScore" name="creditScore" placeholder="Enter credit score">
+
+                <label for="country">Country:</label>
+                <input type="text" id="country" name="country" placeholder="Enter country">
+
+                <label for="gender">Gender:</label>
+                <input type="text" id="gender" name="gender" placeholder="Enter gender">
+
+                <label for="age">Age:</label>
+                <input type="text" id="age" name="age" placeholder="Enter age">
+
+                <label for="tenure">Tenure:</label>
+                <input type="text" id="tenure" name="tenure" placeholder="Enter tenure">
+
+                <label for="balance">Balance:</label>
+                <input type="text" id="balance" name="balance" placeholder="Enter balance">
+
+                <label for="hasCreditCard">Has Credit Card:</label>
+                <input type="text" id="hasCreditCard" name="hasCreditCard" placeholder="Enter hasCreditCard">
+
+                <label for="accountStatus">Account Status:</label>
+                <input type="text" id="accountStatus" name="accountStatus" placeholder="Enter account status">
+
+                <br>
+                <button type="button" id="postButton" onclick="makePostRequest()">Create User</button>
+            </form>
+            <hr>
+
+            <h2>Modify Account</h2>
+
+            <!-- <form id="modifyAccountForm">
+            <input type="text" id="putuserId" name="id" placeholder="Enter ID">
+            <input type="text" id="putuserName" name="name" placeholder="Enter name">
+            <input type="text" id="putcreditScore" name="creditScore" placeholder="Enter credit score">
+            <input type="text" id="putcountry" name="country" placeholder="Enter country">
+            <input type="text" id="putgender" name="gender" placeholder="Enter gender">
+            <input type="text" id="putage" name="age" placeholder="Enter age">
+            <input type="text" id="puttenure" name="tenure" placeholder="Enter tenure">
+            <input type="text" id="putbalance" name="balance" placeholder="Enter balance">
+            <input type="text" id="puthasCreditCard" name="hasCreditCard" placeholder="Enter hasCreditCard">
+            <input type="text" id="putaccountStatus" name="accountStatus" placeholder="Enter account status">
+            <br>
+            <button type="button" id="putButton" onclick="makePutRequest()">Update User</button>
+        </form> -->
+
+
+            <form id="modifyAccountForm">
+                <!-- <input type="text" id="putuserId" name="id" placeholder="Enter ID">
+                <input type="text" id="putuserName" name="name" placeholder="Enter name">
+                <input type="text" id="putcreditScore" name="creditScore" placeholder="Enter credit score">
+                <input type="text" id="putcountry" name="country" placeholder="Enter country">
+                <input type="text" id="putgender" name="gender" placeholder="Enter gender">
+                <input type="text" id="putage" name="age" placeholder="Enter age">
+                <input type="text" id="puttenure" name="tenure" placeholder="Enter tenure">
+                <input type="text" id="putbalance" name="balance" placeholder="Enter balance">
+                <input type="text" id="puthasCreditCard" name="hasCreditCard" placeholder="Enter hasCreditCard">
+                <input type="text" id="putaccountStatus" name="accountStatus" placeholder="Enter account status"> -->
+                <label for="putuserId">ID:</label>
+                <input type="text" id="putuserId" name="id" placeholder="Enter ID">
+
+                <label for="putuserName">Name:</label>
+                <input type="text" id="putuserName" name="name" placeholder="Enter name">
+
+                <label for="putcreditScore">Credit Score:</label>
+                <input type="text" id="putcreditScore" name="creditScore" placeholder="Enter credit score">
+
+                <label for="putcountry">Country:</label>
+                <input type="text" id="putcountry" name="country" placeholder="Enter country">
+
+                <label for="putgender">Gender:</label>
+                <input type="text" id="putgender" name="gender" placeholder="Enter gender">
+
+                <label for="putage">Age:</label>
+                <input type="text" id="putage" name="age" placeholder="Enter age">
+
+                <label for="puttenure">Tenure:</label>
+                <input type="text" id="puttenure" name="tenure" placeholder="Enter tenure">
+
+                <label for="putbalance">Balance:</label>
+                <input type="text" id="putbalance" name="balance" placeholder="Enter balance">
+
+                <label for="puthasCreditCard">Has Credit Card:</label>
+                <input type="text" id="puthasCreditCard" name="hasCreditCard" placeholder="Enter hasCreditCard">
+
+                <label for="putaccountStatus">Account Status:</label>
+                <input type="text" id="putaccountStatus" name="accountStatus" placeholder="Enter account status">
+
+                <br>
+                <button type="button" id="populateFieldsButton" onclick="populateFields()">Show Details</button>
+                <button type="button" id="putButton" onclick="makePutRequest()">Update User</button>
+            </form>
+
+        </div>
+        <hr>
+        <h2>Delete Account</h2>
+
+        <form id="deleteAccountForm">
+            <input type="text" id="deleteuserId" name="id" placeholder="Enter ID" required>
+
+            <button type="button" id="deleteButton" onclick="makeDeleteRequest()">Delete User</button>
+        </form>
+
+</body>
+
+<!-- Other scripts remain unchanged -->
+<script src="https://cdn.jsdelivr.net/npm/aws-sdk@2"></script>
+
+
+</html>
