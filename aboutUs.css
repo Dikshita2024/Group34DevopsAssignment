@@ -1,0 +1,68 @@
+.about-us-section {
+    background-color: #fff;
+    padding: 50px 0;
+    text-align: center;
+}
+
+.section-title {
+    color: #4D4C7D;
+}
+
+.team-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    margin-top: 20px;
+}
+
+.team-member-card {
+    width: 30%;
+    margin: 10px;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    background-color: #fff;
+    transition: transform 0.3s ease-in-out;
+}
+
+.team-member-card:hover {
+    transform: scale(1.05);
+}
+
+.team-member-card img {
+    border-radius: 50%;
+    max-width: 150px;
+    max-height: 150px;
+    margin-bottom: 15px;
+}
+
+.card-content h4 {
+    color: #4D4C7D;
+}
+
+.card-content p {
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.card-content a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+.card-content a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .team-member-card {
+        width: 45%;
+    }
+}
+
+@media (max-width: 576px) {
+    .team-member-card {
+        width: 100%;
+    }
+}

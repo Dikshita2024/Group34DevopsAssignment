@@ -1,0 +1,288 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: DynamoDB Table with CRUD Operations and API Gateway
+
+Resources:
+  AWSDynamoDTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: BankingUser
+      AttributeDefinitions:        
+        - AttributeName: "ID"
+          AttributeType: "S"        
+      KeySchema:
+        - AttributeName: "ID"
+          KeyType: "HASH"        
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "1"
+        WriteCapacityUnits: "1"
+      
+
+  AWSLambda:
+    Type: "AWS::Lambda::Function"
+    Properties:
+      Handler: "index.handler"
+      Role: !GetAtt 
+        - LambdaExecutionRole
+        - Arn
+      FunctionName: BankingApplication
+      Runtime: nodejs14.x      
+      Timeout: 60
+      MemorySize: 128
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+          const dynamodb = new AWS.DynamoDB();
+          const sns = new AWS.SNS();
+          
+          const table_name = 'BankingUser';
+          const topicArn = 'arn:aws:sns:us-east-1:869495384954:BankingSNSTopic';
+          
+          exports.handler = async (event, context) => {
+              const method = event.httpMethod;
+  
+              // Add CORS headers
+              const headers = {
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Headers': 'Content-Type',
+                  'Access-Control-Allow-Methods': 'OPTIONS,POST,GET,PUT,DELETE',
+                  'Access-Control-Allow-Credentials': true,
+              };
+  
+              // Check the HTTP method
+              if (method === 'OPTIONS') {
+                  // Return a 200 response for pre-flight requests
+                  return {
+                      statusCode: 200,
+                      headers,
+                      body: JSON.stringify('OK')
+                  };
+              }
+  
+              if (method === 'POST') {
+                  console.log('Inside POST');
+                  const data = JSON.parse(event.body);
+                  console.log('data',data);
+                  const item = {
+                      'ID': {'S': data['ID']},
+                      'Name': {'S': data['Name']},
+                      'CreditScore': {'S': data['CreditScore']},
+                      'Country': {'S': data['Country']},
+                      'Gender': {'S': data['Gender']},
+                      'Age': {'S': data['Age']},
+                      'Tenure': {'S': data['Tenure']},
+                      'Balance': {'S': data['Balance']},
+                      'HasCreditCard': {'S': data['HasCreditCard']},
+                      'AccountStatus': {'S': data['AccountStatus']}                      
+                  };
+                  console.log('item',item);
+                  await dynamodb.putItem({
+                      TableName: table_name,
+                      Item: item
+                  }).promise();
+                  console.log('Inserted successfully');
+                  await sns.publish({
+                      TopicArn: topicArn,
+                      Message: `Details of ${data['Name']} have been saved for AccountID ${data['ID']} \n Thank You for Banking with us`,
+                      Subject: `AccountID ${data['ID']} got Created`
+                  }).promise();
+                  console.log('SNS message sent');
+                  return {
+                      statusCode: 200,
+                      headers,
+                      body: JSON.stringify('Item created successfully')
+                  };
+              } else if (method === 'GET') {
+                  const response = await dynamodb.getItem({
+                      TableName: table_name,
+                      Key: {
+                          'ID': {'S': event.queryStringParameters.ID}
+                      }
+                  }).promise();
+                  
+                  const item = AWS.DynamoDB.Converter.unmarshall(response.Item || {});
+  
+                  console.log('Retrieved item:', item);
+  
+                  await sns.publish({
+                      TopicArn: topicArn,
+                      Message: `Banking Details:\n ID: ${item.ID}\n AccountStatus: ${item.AccountStatus}\n Name: ${item.Name}\n Balance: ${item.Balance}`,
+                      Subject: `Application Details for AccountID : ${item.ID}`
+                  }).promise();
+                  
+                  return {
+                      statusCode: 200,
+                      headers,
+                      body: JSON.stringify(item)
+                  };
+              } else if (method === 'PUT') {
+                  const data = JSON.parse(event.body);
+                  const item = {
+                      'ID': {'S': data['ID']},
+                      'Name': {'S': data['Name']},
+                      'CreditScore': {'S': data['CreditScore']},
+                      'Country': {'S': data['Country']},
+                      'Gender': {'S': data['Gender']},
+                      'Age': {'S': data['Age']},
+                      'Tenure': {'S': data['Tenure']},
+                      'Balance': {'S': data['Balance']},
+                      'HasCreditCard': {'S': data['HasCreditCard']},
+                      'AccountStatus': {'S': data['AccountStatus']}                      
+                  };
+
+                   console.log('Updated item:', item);
+                  
+                  await dynamodb.putItem({
+                      TableName: table_name,
+                      Item: item
+                  }).promise();
+  
+                  await sns.publish({
+                      TopicArn: topicArn,
+                      Message: `Details Updated Successfully for AccountID ${data['ID']}`,
+                      Subject: `Updated Status of the Account`
+                  }).promise();
+                  
+                  return {
+                      statusCode: 200,
+                      headers,
+                      body: JSON.stringify('Item updated successfully')
+                  };
+              } else if (method === 'DELETE') {
+                  const deletedID = event.queryStringParameters.ID;
+                  await dynamodb.deleteItem({
+                      TableName: table_name,
+                      Key: {
+                          'ID': {'S': event.queryStringParameters.ID}
+                      }
+                  }).promise();  
+
+                  await sns.publish({
+                      TopicArn: topicArn,
+                      Message: `AccountID : ${deletedID} got Deleted Successfully`,
+                      Subject: `Delete status of the Account`
+                  }).promise();                
+                  
+                  return {
+                      statusCode: 200,
+                      headers,
+                      body: JSON.stringify('Item deleted successfully')
+                  };
+              } else {
+                  return {
+                      statusCode: 400,
+                      headers,
+                      body: JSON.stringify('Invalid HTTP method')
+                  };
+              }
+          };
+  
+  LambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: "SampleDynamoDBPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "dynamodb:PutItem"
+                  - "dynamodb:GetItem"
+                  - "dynamodb:UpdateItem"
+                  - "dynamodb:DeleteItem"
+                Resource:
+                  - !GetAtt
+                    - AWSDynamoDTable
+                    - Arn
+              - Effect: "Allow"
+                Action:
+                  - "sns:Publish"
+                Resource:
+                  - !Ref AWSSNSTopic
+              - Effect: "Allow"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource:
+                  - "arn:aws:logs:*:*:*"
+                  
+  CrudOperationsInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref AWSLambda
+      Principal: "apigateway.amazonaws.com"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${CrudOperationsApi}/*/*"
+
+  CrudOperationsApi:
+    Type: "AWS::ApiGateway::RestApi"
+    Properties: 
+      Name: "CrudOperationsAPI"
+      FailOnWarnings: "true"
+      Policy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action:
+              - execute-api:Invoke
+            Resource:
+              - execute-api:/prod/*
+
+  CrudOperationsResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties: 
+      ParentId: !GetAtt CrudOperationsApi.RootResourceId 
+        
+      PathPart: "items"
+      RestApiId: !Ref CrudOperationsApi
+
+  CrudOperationsMethod:
+    Type: "AWS::ApiGateway::Method"
+    Properties: 
+      AuthorizationType: NONE
+      HttpMethod: ANY
+      ResourceId: !Ref CrudOperationsResource          
+      RestApiId: !Ref CrudOperationsApi        
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AWSLambda.Arn}/invocations'
+
+  AWSSNSTopic:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      DisplayName: "BankingSNSTopic"
+      TopicName: "BankingSNSTopic"
+
+  MySNSTopicSubscriptionEmail:
+    Type: "AWS::SNS::Subscription"
+    Properties:
+      Protocol: "email"
+      TopicArn: !Ref AWSSNSTopic
+      Endpoint: "suttamd1995@gmail.com"  
+
+  Deployment:
+    DependsOn:
+      - CrudOperationsMethod
+    Type: "AWS::ApiGateway::Deployment"
+    Properties:
+      RestApiId: !Ref CrudOperationsApi
+
+  Stage:
+    Type: "AWS::ApiGateway::Stage"
+    Properties:
+      DeploymentId: !Ref Deployment
+      RestApiId: !Ref CrudOperationsApi
+      StageName: "prod"
